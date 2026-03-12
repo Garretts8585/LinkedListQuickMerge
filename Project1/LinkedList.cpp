@@ -5,31 +5,71 @@
 
 static int ComparisonCount = 0;
 
-LinkedList::LinkedList()
-{
+LinkedList::LinkedList() {
 	Head = nullptr;
 }
 
-LinkedList::LinkedList(ListNode* InHead)
-{
-	Head = InHead;
+LinkedList::LinkedList(ListNode* InHead) {
+
+	Head = nullptr;
+
+	//Deep copy list
+	while (InHead != nullptr) {
+		InsertValue(InHead->Value);
+
+		InHead = InHead->Next;
+	}
 }
 
-LinkedList::~LinkedList()
-{
-	// Delete each here
+LinkedList::LinkedList(const LinkedList& RHS) {
+
+	Head = nullptr;
+
+	ListNode* RHHead = RHS.Head;
+
+	//Deep copy list
+	while (RHHead != nullptr) {
+		InsertValue(RHHead->Value);
+
+		RHHead = RHHead->Next;
+	}
+}
+
+LinkedList& LinkedList::operator=(const LinkedList& RHS) {
+
+	Head = nullptr;
+	ListNode* RHHead = RHS.Head;
+
+	//Deep copy list
+	while (RHHead != nullptr) {
+		InsertValue(RHHead->Value);
+
+		RHHead = RHHead->Next;
+	}
+
+	return *this;
+}
+
+LinkedList::~LinkedList() {
+	// Delete each node
+	ListNode* CurrentNode = Head;
+	while (CurrentNode != nullptr) {
+		ListNode* NextNode = CurrentNode->Next;
+
+		delete CurrentNode;
+
+		CurrentNode = NextNode;
+	}
 }
 
 void LinkedList::InsertValue(int Value)
 {
-	if (Head == nullptr)
-	{
+	if (Head == nullptr) {
 		Head = new ListNode(Value);
 		return;
 	}
 
-	if (Value <= Head->Value)
-	{
+	if (Value <= Head->Value) {
 		ListNode* NewNode = new ListNode(Value);
 		NewNode->Next = Head;
 		Head = NewNode;
@@ -38,14 +78,12 @@ void LinkedList::InsertValue(int Value)
 
 	ListNode* CurrentNode = Head;
 
-	while (CurrentNode)
-	{
-		if (CurrentNode->Value <= Value && (CurrentNode->Next == nullptr || Value <= CurrentNode->Next->Value))
-		{
+	while (CurrentNode) {
+
+		if (CurrentNode->Value <= Value && (CurrentNode->Next == nullptr || Value <= CurrentNode->Next->Value)) {
 			ListNode* NewNode = new ListNode(Value);
 
-			if (CurrentNode->Next)
-			{
+			if (CurrentNode->Next) {
 				NewNode->Next = CurrentNode->Next;
 			}
 
@@ -58,14 +96,13 @@ void LinkedList::InsertValue(int Value)
 	}
 }
 
-void LinkedList::DebugPrint() const
-{
+void LinkedList::DebugPrint() const {
+
 	ListNode* CurrentNode = Head;
-	while (CurrentNode)
-	{
+	while (CurrentNode) {
+
 		std::cout << CurrentNode->Value;
-		if (CurrentNode->Next)
-		{
+		if (CurrentNode->Next) {
 			std::cout << " -> ";
 		}
 		CurrentNode = CurrentNode->Next;
@@ -74,18 +111,21 @@ void LinkedList::DebugPrint() const
 	std::cout << std::endl;
 }
 
-LinkedList LinkedList::MergeLists(std::vector<LinkedList>& lists) {
+LinkedList& LinkedList::MergeLists(std::vector<LinkedList>& lists) {
 
-	return QuickMergeLists(lists, 0, static_cast<int>(lists.size()) - 1);
+	int MergedIndex = -1;
+	QuickMergeLists(lists, 0, static_cast<int>(lists.size()) - 1, MergedIndex);
+
+	return lists[MergedIndex];
 }
 
-LinkedList LinkedList::Merge2Lists(LinkedList& List1, LinkedList& List2) {
+ListNode* LinkedList::Merge2Lists(LinkedList& List1, LinkedList& List2) {
 	// Exit early if one of the lists is empty 
 	if (List1.Head == nullptr) {
-		return List2;
+		return List2.Head;
 	}
 	else if (List2.Head == nullptr) {
-		return List1;
+		return List1.Head;
 	}
 
 	ListNode* Head = nullptr;
@@ -123,35 +163,45 @@ LinkedList LinkedList::Merge2Lists(LinkedList& List1, LinkedList& List2) {
 			CurrentNode = NextNode;
 		}
 	}
-	// Clear other lists
-	List1.Head = nullptr;
+	
+	// Set 1 to the combined list and clear 2
+	List1.Head = Head;
 	List2.Head = nullptr;
-	return LinkedList(Head);
+
+	return List1.Head;
 }
 
-LinkedList LinkedList::QuickMergeLists(std::vector<LinkedList>& lists, int StartIndex, int EndIndex) {
+ListNode* LinkedList::QuickMergeLists(std::vector<LinkedList>& lists, int StartIndex, int EndIndex, int& OutMergedIndex) {
 
 	// Handle base cases were we have 2 or fewer lists to merge
 	if (StartIndex > EndIndex) {
 		// Nothing to merge in this case, return an empty list
-		return LinkedList(nullptr);
+		return nullptr;
 	}
 	else if (StartIndex == EndIndex) {
 
-		return lists[StartIndex];
+		OutMergedIndex = StartIndex;
+		return lists[StartIndex].Head;
 	}
 	else if (StartIndex == EndIndex - 1) {
 
+		OutMergedIndex = StartIndex;
 		return Merge2Lists(lists[StartIndex], lists[EndIndex]);
 	}
 
 	// Select a middle pivot index and quick merge the left and right, with the pivot being included in the right list
 	int PivotIndex = (StartIndex + EndIndex + 1) / 2;
-	LinkedList LeftMergedList = QuickMergeLists(lists, StartIndex, PivotIndex - 1);
-	LinkedList RightMergedList = QuickMergeLists(lists, PivotIndex, EndIndex);
+
+	int MergedIndexLeft = -1;
+	ListNode* LeftMergedList = QuickMergeLists(lists, StartIndex, PivotIndex - 1, MergedIndexLeft);
+
+	int MergedIndexRight = -1;
+	ListNode* RightMergedList = QuickMergeLists(lists, PivotIndex, EndIndex, MergedIndexRight);
 
 	// Return the merging of the two merged left and right lists 
-	return Merge2Lists(LeftMergedList, RightMergedList);
+
+	OutMergedIndex = MergedIndexLeft;
+	return Merge2Lists(lists[MergedIndexLeft], lists[MergedIndexRight]);
 }
 
 LinkedList LinkedList::IterativeMergeLists(std::vector<LinkedList>& lists) {

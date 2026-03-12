@@ -37,9 +37,13 @@ public:
 	/* Constructors */
 	LinkedList();
 	LinkedList(ListNode* Head);
+	LinkedList(const LinkedList& RHS);
 
 	/* Destructor */
 	~LinkedList();
+
+	/** Assignment */
+	LinkedList& operator=(const LinkedList& RHS);
 
 	/* Creates and inserts a new node with the given value into the list while keeping it in ascending order */
 	void InsertValue(int Value);
@@ -48,17 +52,19 @@ public:
 	void DebugPrint() const;
 
 	/* Merges a list of separate linked lists together */
-	static LinkedList MergeLists(std::vector<LinkedList>& lists);
-
-	/* Merges two linked lists together */
-	static LinkedList Merge2Lists(LinkedList& List1, LinkedList& List2);
+	static LinkedList& MergeLists(std::vector<LinkedList>& lists);
 
 protected:
+	/* Merges two linked lists together, into List1. Returns new head of List1 */
+	static ListNode* Merge2Lists(LinkedList& List1, LinkedList& List2);
+
 	/** iteratively merges all lists together by choosing a pivot,
 	*  merging all lists before the and after the pivot and recursively calling quick merge on
 	*  the left and right until we are merging only 2 linked lists together
+	* 
+	*  Returns head of the merged list, and OutMergedIndex as the index into lists where the all were merged
 	*/
-	static LinkedList QuickMergeLists(std::vector<LinkedList>& lists, int StartIndex, int EndIndex);
+	static ListNode* QuickMergeLists(std::vector<LinkedList>& lists, int StartIndex, int EndIndex, int& OutMergedIndex);
 
 	/** Brute force merge algorthim to compare to QuickMergeLists */
 	static LinkedList IterativeMergeLists(std::vector<LinkedList>& lists);

@@ -16,7 +16,10 @@ void Test0()
 	L1.InsertValue(10);
 	L1.InsertValue(25);
 
-	LinkedList MergedList = LinkedList::Merge2Lists(L0, L1);
+	std::vector<LinkedList> Lists;
+	Lists.push_back(L0);
+	Lists.push_back(L1);
+	LinkedList MergedList = LinkedList::MergeLists(Lists);
 	MergedList.DebugPrint();
 }
 
@@ -48,7 +51,7 @@ void Test1()
 	Lists.push_back(L1);
 	Lists.push_back(L2);
 
-	LinkedList MergedList = LinkedList::MergeLists(Lists);
+	LinkedList& MergedList = LinkedList::MergeLists(Lists);
 	MergedList.DebugPrint();
 }
 
@@ -72,5 +75,5 @@ void StressTest0()
 
 int main()
 {
-	StressTest0();
+	Test1();
 }
